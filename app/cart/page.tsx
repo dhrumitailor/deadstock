@@ -1,129 +1,208 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { createClient } from "@/lib/server";
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, Heart, ArrowRight } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { ArrowLeft, ShoppingBag, Lock } from "lucide-react";
+import DeleteCartItem from "@/components/DeleteCartItem";
+import QuantitySelector from "@/components/QuantitySelector";
+import CartSummary from "@/components/CartSummary"; // 🔥 Swapped CheckoutButton for CartSummary
 
-export default function CartPage() {
-  const [mounted, setMounted] = useState(false);
-  const { cart, removeFromCart, updateQuantity, addToWishlist } = useStore();
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export default async function CartPage() {
+  // 1. Initialize Supabase and get the real user
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!mounted) {
+  // 2. Handle the "Not Logged In" state
+  if (!user) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[50vh] flex items-center justify-center">
-        Loading cart...
+      <div className="max-w-5xl mx-auto px-4 py-24 min-h-screen text-center">
+        <div className="bg-zinc-900 border border-gray-800 p-12 rounded-lg flex flex-col items-center">
+          <Lock className="text-gray-500 mb-4" size={48} />
+          <h1 className="text-2xl font-bold text-white mb-2">Your cart is locked</h1>
+          <p className="text-gray-400 mb-8">Please login to view your saved items and checkout.</p>
+          <Link href="/login" className="bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gray-200 transition">
+            Sign In / Register
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const userId = user.id;
+
+  // 3. Fetch cart items
+  const { data: cartItems, error } = await supabase
+    .from("cart_items")
+    .select(`
+      id,
+      quantity,
+      products!product_id (
+        id,
+        title,
+        price,
+        image
+      )
+    `)
+    .eq("user_id", userId);
+
+  if (error) {
+    console.error("Cart fetch error:", error);
+  }
+
+  const getProductData = (item: any) => {
+    return Array.isArray(item.products) ? item.products[0] : item.products;
+  };
+
+  const subtotal = cartItems?.reduce((acc: number, item: any) => {
+    const product = getProductData(item);
+    return acc + (product?.price || 0) * item.quantity;
+  }, 0) || 0;
+
+//   return (
+//     <div className="max-w-5xl mx-auto px-4 py-12 min-h-screen text-white">
+//       <div className="flex items-center justify-between mb-8">
+//         <h1 className="text-3xl font-bold flex items-center gap-2">
+//           <ShoppingBag /> Your Cart
+//         </h1>
+//         <Link href="/" className="text-sm text-gray-400 hover:text-white flex items-center gap-1 transition">
+//           <ArrowLeft size={14} /> Continue Shopping
+//         </Link>
+//       </div>
+
+//       {!cartItems || cartItems.length === 0 ? (
+//         <div className="text-center py-20 border border-gray-800 rounded-lg bg-zinc-900">
+//           <p className="text-gray-500 mb-4">Your cart is currently empty.</p>
+//           <Link href="/" className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition">
+//             Browse Products
+//           </Link>
+//         </div>
+//       ) : (
+//         <div className="grid lg:grid-cols-3 gap-10">
+//           {/* Left Column: List of Items */}
+//           <div className="lg:col-span-2 space-y-6">
+//             {cartItems.map((item: any) => {
+//               const product = getProductData(item);
+//               if (!product) return null;
+
+//               return (
+//                 <div key={item.id} className="flex items-center gap-6 border-b border-gray-800 pb-6">
+//                   <div className="relative w-24 h-32 flex-shrink-0">
+//                     <Image
+//                       src={Array.isArray(product.image) ? product.image[0] : product.image || "/placeholder.jpg"}
+//                       alt={product.title}
+//                       fill
+//                       className="object-cover rounded shadow-sm"
+//                     />
+//                   </div>
+
+//                   <div className="flex-1">
+//                     <h2 className="font-semibold text-lg">{product.title}</h2>
+//                     <p className="text-gray-400 text-sm mb-2">
+//                       Unit Price: ₹ {product.price.toLocaleString('en-IN')}
+//                     </p>
+//                     <div className="mt-2">
+//                       <QuantitySelector
+//                         itemId={item.id}
+//                         initialQuantity={item.quantity}
+//                       />
+//                     </div>
+//                   </div>
+
+//                   <div className="flex flex-col items-end justify-between gap-4">
+//                     <p className="font-bold text-lg">
+//                       ₹ {(product.price * item.quantity).toLocaleString('en-IN')}
+//                     </p>
+//                     <DeleteCartItem itemId={item.id} />
+//                   </div>
+//                 </div>
+//               );
+//             })}
+//           </div>
+
+//           {/* Right Column: Order Summary & Shipping Form */}
+//           <CartSummary cartItems={cartItems || []} subtotal={subtotal} />
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+// // ... (imports remain same)
+
+// export default async function CartPage() {
+//   // ... (auth and fetch logic remain same)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
-      <h1 className="text-3xl font-serif mb-8">Shopping Cart</h1>
-
-      {cart.length === 0 ? (
-        <div className="text-center py-20 bg-brand-100 rounded-lg">
-          <p className="text-brand-600 mb-6 font-medium">Your cart is empty.</p>
-          <Link href="/shop" className="inline-block bg-brand-900 text-brand-100 px-8 py-3 rounded-full hover:bg-brand-800 transition-colors">
-            Continue Shopping
+    /* Added bg-zinc-950 to ensure the background is dark enough for white text */
+    <div className="min-h-screen bg-zinc-950 text-white"> 
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <ShoppingBag className="text-white" /> Your Cart
+          </h1>
+          <Link href="/" className="text-sm text-zinc-400 hover:text-white flex items-center gap-1 transition">
+            <ArrowLeft size={14} /> Continue Shopping
           </Link>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-6">
-            {cart.map((item) => (
-              <div key={item.id} className="flex gap-6 pb-6 border-b border-brand-200">
-                <div className="relative w-24 h-32 flex-shrink-0 bg-brand-200 rounded-sm overflow-hidden">
-                  <Image src={item.image} alt={item.title} fill className="object-cover" />
-                </div>
-                <div className="flex flex-col flex-grow">
-                  <div className="flex justify-between">
-                    <Link href={`/product/${item.id}`} className="font-medium text-brand-900 hover:text-brand-600 transition-colors max-w-[80%] line-clamp-2">
-                      {item.title}
-                    </Link>
-                    <span className="font-medium">{item.currency}{(item.price * item.quantity).toLocaleString()}</span>
-                  </div>
-                  <div className="mt-1 text-sm text-brand-500 space-y-1">
-                    <p>Size: {item.size}</p>
-                    <p>Condition: {item.condition}</p>
-                  </div>
-                  <div className="mt-auto flex justify-between items-center">
-                    <div className="flex items-center border border-brand-200 rounded-full">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="px-3 py-1 text-brand-600 hover:text-brand-900"
-                        disabled={item.quantity <= 1}
-                      >-</button>
-                      <span className="px-2 text-sm">{item.quantity}</span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-3 py-1 text-brand-600 hover:text-brand-900"
-                      >+</button>
-                    </div>
-                    <div className="flex gap-4">
-                      <button 
-                        onClick={() => {
-                          addToWishlist(item);
-                          removeFromCart(item.id);
-                        }}
-                        className="text-sm text-brand-500 hover:text-brand-900 flex items-center gap-1 transition-colors"
-                      >
-                        <Heart size={16} /> <span className="hidden sm:inline">Move to Wishlist</span>
-                      </button>
-                      <button 
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-sm text-brand-500 hover:text-red-600 transition-colors"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <div className="bg-brand-100 p-8 rounded-lg sticky top-24">
-              <h2 className="text-xl font-serif mb-6">Order Summary</h2>
-              <div className="space-y-4 mb-6 text-sm">
-                <div className="flex justify-between text-brand-600">
-                  <span>Subtotal</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-brand-600">
-                  <span>Shipping</span>
-                  <span>Calculated at checkout</span>
-                </div>
-                <div className="border-t border-brand-200 pt-4 flex justify-between font-medium text-lg">
-                  <span>Total</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
-                </div>
-              </div>
-              <Link
-                href="/checkout"
-                className="w-full bg-brand-900 text-brand-100 py-4 px-8 rounded-full font-medium hover:bg-brand-800 transition-colors flex justify-center items-center gap-2"
-              >
-                Checkout <ArrowRight size={18} />
-              </Link>
-              <div className="mt-6 text-center text-xs text-brand-500 space-y-2">
-                <p>Tax included and shipping calculated at checkout.</p>
-                <p>All sales are final.</p>
-              </div>
-            </div>
+        {!cartItems || cartItems.length === 0 ? (
+          <div className="text-center py-20 border border-zinc-800 rounded-lg bg-zinc-900/50">
+            <p className="text-zinc-500 mb-4">Your cart is currently empty.</p>
+            <Link href="/" className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition">
+              Browse Products
+            </Link>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-10">
+            {/* Left Column: List of Items */}
+            <div className="lg:col-span-2 space-y-6">
+              {cartItems.map((item: any) => {
+                const product = getProductData(item);
+                if (!product) return null;
+
+                return (
+                  <div key={item.id} className="flex items-center gap-6 border-b border-zinc-800 pb-6">
+                    <div className="relative w-24 h-32 flex-shrink-0 bg-zinc-900 rounded overflow-hidden">
+                      <Image
+                        src={Array.isArray(product.image) ? product.image[0] : product.image || "/placeholder.jpg"}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1">
+                      <h2 className="font-semibold text-lg text-white">{product.title}</h2>
+                      <p className="text-zinc-400 text-sm mb-2">
+                        Unit Price: ₹ {product.price.toLocaleString('en-IN')}
+                      </p>
+                      <div className="mt-2">
+                        <QuantitySelector
+                          itemId={item.id}
+                          initialQuantity={item.quantity}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end justify-between gap-4">
+                      <p className="font-bold text-lg text-white">
+                        ₹ {(product.price * item.quantity).toLocaleString('en-IN')}
+                      </p>
+                      <DeleteCartItem itemId={item.id} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Right Column: Order Summary */}
+            <aside className="lg:col-start-3">
+               <CartSummary cartItems={cartItems || []} subtotal={subtotal} />
+            </aside>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

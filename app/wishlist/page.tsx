@@ -1,78 +1,313 @@
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import Image from "next/image";
+// import Link from "next/link";
+// import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+// import { supabase } from "@/lib/supabase";
+
+// export default function WishlistPage() {
+//   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     fetchWishlist();
+//   }, []);
+
+//   const fetchWishlist = async () => {
+//     const { data: { user } } = await supabase.auth.getUser();
+//     if (!user) {
+//       setLoading(false);
+//       return;
+//     }
+
+//     // Fetching the wishlist joined with product details
+//     const { data, error } = await supabase
+//       .from("wishlist")
+//       .select(`
+//         id,
+//         products (
+//           id,
+//           title,
+//           price,
+//           image,
+//           category
+//         )
+//       `)
+//       .eq("user_id", user.id);
+
+//     if (!error && data) {
+//       setWishlistItems(data.map((item: any) => item.products));
+//     }
+//     setLoading(false);
+//   };
+
+//   const removeFromWishlist = async (productId: string) => {
+//     const { data: { user } } = await supabase.auth.getUser();
+//     if (!user) return;
+
+//     const { error } = await supabase
+//       .from("wishlist")
+//       .delete()
+//       .eq("user_id", user.id)
+//       .eq("product_id", productId);
+
+//     if (!error) {
+//       setWishlistItems(prev => prev.filter(item => item.id !== productId));
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-black flex items-center justify-center text-white font-mono uppercase tracking-widest">
+//         Fetching your vault...
+//       </div>
+//     );
+//   }
+//   // ... existing removeFromWishlist function ...
+
+//   const addToCart = async (productId: string) => {
+//     const { data: { user } } = await supabase.auth.getUser();
+
+//     // If not logged in, we should send them to login
+//     if (!user) {
+//       window.location.href = "/login";
+//       return;
+//     }
+
+//     // Insert into cart_items table
+//     const { error } = await supabase
+//       .from("cart_items")
+//       .insert({
+//         user_id: user.id,
+//         product_id: productId,
+//         quantity: 1
+//       });
+
+//     if (error) {
+//       console.error("Cart Error:", error.message);
+//       // If it's a unique constraint error, it means it's already in cart
+//       if (error.code === '23505') {
+//         alert("Item is already in your cart!");
+//       }
+//     } else {
+//       alert("Added to cart successfully!");
+//     }
+//   };
+
+//   // ... then your if (loading) block starts ...
+
+//   return (
+//     <div className="max-w-7xl mx-auto px-6 py-16 min-h-screen bg-black text-white">
+//       <header className="mb-12">
+//         <h1 className="text-5xl font-bold tracking-tighter uppercase italic">Your Wishlist</h1>
+//         <div className="h-1 w-20 bg-white mt-2"></div>
+//       </header>
+
+//       {wishlistItems.length === 0 ? (
+//         <div className="py-24 border border-zinc-900 rounded-2xl text-center bg-zinc-950/50">
+//           <p className="text-zinc-500 mb-8 font-medium uppercase tracking-widest">Your wishlist is currently empty.</p>
+//           <Link href="/shop" className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-zinc-200 transition-all">
+//             Explore Drops <ArrowRight size={18} />
+//           </Link>
+//         </div>
+//       ) : (
+//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+//           {wishlistItems.map((item) => {
+//             // const displayImage = Array.isArray(item.image) ? item.image[0] : item.image;
+//             const displayImage = Array.isArray(item.products?.image)
+//               ? item.products.image[0]
+//               : item.products?.image;
+
+//             return (
+//               <div key={item.id} className="group flex flex-col bg-zinc-950 border border-zinc-900 p-4 rounded-xl">
+//                 <Link href={`/products/${item.id}`} className="relative aspect-[3/4] overflow-hidden rounded-lg mb-6">
+//                   <Image
+//                     src={displayImage || "/placeholder.jpg"}
+//                     alt={item.title}
+//                     fill
+//                     className="object-cover transition-transform duration-700 group-hover:scale-110"
+//                   />
+//                 </Link>
+
+//                 <div className="flex flex-col mb-6">
+//                   <h3 className="text-lg font-bold uppercase tracking-tighter line-clamp-1">{item.title}</h3>
+//                   <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1 italic">{item.category}</p>
+//                   <span className="text-xl font-mono font-bold mt-2">
+//                     ₹{item.price.toLocaleString()}
+//                   </span>
+//                 </div>
+
+//                 <div className="flex gap-2">
+//                   <button className="flex-1 bg-white text-black py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2">
+//                     <ShoppingBag size={14} /> Add to Cart
+//                   </button>
+//                   <button
+//                     onClick={() => removeFromWishlist(item.id)}
+//                     className="p-3 border border-zinc-800 text-zinc-500 hover:text-red-500 hover:border-red-500 transition-all rounded-lg"
+//                   >
+//                     <Trash2 size={18} />
+//                   </button>
+//                 </div>
+//               </div>
+//             );
+//           })}
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, ShoppingBag } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function WishlistPage() {
-  const [mounted, setMounted] = useState(false);
-  const { wishlist, removeFromWishlist, addToCart } = useStore();
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
+    fetchWishlist();
   }, []);
 
-  if (!mounted) {
+  const fetchWishlist = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("wishlist")
+      .select(`
+        id,
+        products (
+          id,
+          title,
+          price,
+          image,
+          category
+        )
+      `)
+      .eq("user_id", user.id);
+
+    if (!error && data) {
+      // Map the joined data so we have the product fields directly
+      setWishlistItems(data.filter(item => item.products).map((item: any) => item.products));
+    }
+    setLoading(false);
+  };
+
+  const removeFromWishlist = async (productId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from("wishlist")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+
+    if (!error) {
+      setWishlistItems(prev => prev.filter(item => item.id !== productId));
+    }
+  };
+
+  const addToCart = async (productId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const { error } = await supabase
+      .from("cart_items")
+      .insert({
+        user_id: user.id,
+        product_id: productId,
+        quantity: 1
+      });
+
+    if (error) {
+      if (error.code === '23505') {
+        alert("Item is already in your cart!");
+      } else {
+        console.error("Cart Error:", error.message);
+      }
+    } else {
+      alert("Added to cart successfully!");
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[50vh] flex items-center justify-center">
-        Loading wishlist...
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+        <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="font-mono uppercase tracking-widest text-[10px]">Fetching your vault...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
-      <h1 className="text-3xl font-serif mb-8">Your Wishlist</h1>
+    <div className="max-w-7xl mx-auto px-6 py-16 min-h-screen bg-black text-white">
+      <header className="mb-12">
+        <h1 className="text-5xl font-bold tracking-tighter uppercase italic">Your Wishlist</h1>
+        <div className="h-1 w-20 bg-white mt-2"></div>
+      </header>
 
-      {wishlist.length === 0 ? (
-        <div className="text-center py-20 bg-brand-100 rounded-lg">
-          <p className="text-brand-600 mb-6 font-medium">Your wishlist is empty.</p>
-          <Link href="/shop" className="inline-block bg-brand-900 text-brand-100 px-8 py-3 rounded-full hover:bg-brand-800 transition-colors">
-            Explore Collections
+      {wishlistItems.length === 0 ? (
+        <div className="py-24 border border-zinc-900 rounded-2xl text-center bg-zinc-950/50">
+          <p className="text-zinc-500 mb-8 font-medium uppercase tracking-widest">Your wishlist is currently empty.</p>
+          <Link href="/shop" className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-bold uppercase tracking-widest hover:bg-zinc-200 transition-all">
+            Explore Drops <ArrowRight size={18} />
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 sm:gap-x-6 lg:gap-x-8">
-          {wishlist.map((item) => (
-            <div key={item.id} className="group flex flex-col">
-              <Link href={`/product/${item.id}`} className="relative bg-brand-200 aspect-[4/5] overflow-hidden rounded-sm mb-4">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                />
-              </Link>
-              
-              <div className="flex flex-col space-y-1 mb-4 flex-grow">
-                <Link href={`/product/${item.id}`} className="text-sm font-medium text-brand-900 leading-tight hover:text-brand-600 transition-colors line-clamp-2">
-                  {item.title}
-                </Link>
-                <span className="text-sm text-brand-600">
-                  {item.currency} {item.price.toLocaleString()}
-                </span>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {wishlistItems.map((item) => {
+            const displayImage = Array.isArray(item.image) ? item.image[0] : item.image;
 
-              <div className="flex gap-2 mt-auto">
-                <button 
-                  onClick={() => addToCart(item)}
-                  className="flex-1 bg-brand-900 text-brand-100 py-2 rounded-sm text-xs font-medium hover:bg-brand-800 transition-colors flex items-center justify-center gap-1"
-                >
-                  <ShoppingBag size={14} /> Add to Cart
-                </button>
-                <button 
-                  onClick={() => removeFromWishlist(item.id)}
-                  className="px-3 border border-brand-200 text-brand-500 hover:text-red-500 hover:border-red-500 transition-colors rounded-sm flex items-center justify-center"
-                  aria-label="Remove from Wishlist"
-                >
-                  <Trash2 size={14} />
-                </button>
+            return (
+              <div key={item.id} className="group flex flex-col bg-zinc-950 border border-zinc-900 p-4 rounded-xl">
+                <Link href={`/products/${item.id}`} className="relative aspect-[3/4] overflow-hidden rounded-lg mb-6">
+                  <Image
+                    src={displayImage || "/placeholder.jpg"}
+                    alt={item.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </Link>
+
+                <div className="flex flex-col mb-6">
+                  <h3 className="text-lg font-bold uppercase tracking-tighter line-clamp-1">{item.title}</h3>
+                  <p className="text-zinc-500 text-xs uppercase tracking-widest mt-1 italic">{item.category}</p>
+                  <span className="text-xl font-mono font-bold mt-2">
+                    ₹{item.price?.toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => addToCart(item.id)}
+                    className="flex-1 bg-white text-black py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag size={14} /> Add to Cart
+                  </button>
+                  <button
+                    onClick={() => removeFromWishlist(item.id)}
+                    className="p-3 border border-zinc-800 text-zinc-500 hover:text-red-500 hover:border-red-500 transition-all rounded-lg"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

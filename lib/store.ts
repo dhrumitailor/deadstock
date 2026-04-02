@@ -1,94 +1,86 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product } from './data';
 
-interface CartItem extends Product {
+// Updated interface to include selectedSize
+export interface CartItem {
+  id: string;
+  title: string;
+  price: number;
+  image: string | string[];
+  selectedSize: string; // Critical for separate line items
   quantity: number;
 }
 
 interface StoreState {
   cart: CartItem[];
-  wishlist: Product[];
 
   // Cart Actions
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: any, size: string) => void;
+  removeFromCart: (productId: string, size: string) => void;
+  updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
-
-  // Wishlist Actions
-  addToWishlist: (product: Product) => void;
-  removeFromWishlist: (productId: string) => void;
-  toggleWishlist: (product: Product) => void;
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       cart: [],
-      wishlist: [],
 
-      addToCart: (product) => {
+      addToCart: (product, size) => {
         const cart = get().cart;
-        const existingItem = cart.find((item) => item.id === product.id);
+
+        // Check for item with BOTH same ID and same Size
+        const existingItem = cart.find(
+          (item) => item.id === product.id && item.selectedSize === size
+        );
 
         if (existingItem) {
           set({
             cart: cart.map((item) =>
-              item.id === product.id
+              item.id === product.id && item.selectedSize === size
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             ),
           });
         } else {
-          set({ cart: [...cart, { ...product, quantity: 1 }] });
+          // Add as a new line item
+          set({
+            cart: [...cart, {
+              id: product.id,
+              title: product.title,
+              price: product.price,
+              image: Array.isArray(product.image) ? product.image[0] : product.image,
+              selectedSize: size,
+              quantity: 1
+            }]
+          });
         }
       },
 
-      removeFromCart: (productId) => {
+      removeFromCart: (productId, size) => {
         set({
-          cart: get().cart.filter((item) => item.id !== productId),
+          cart: get().cart.filter(
+            (item) => !(item.id === productId && item.selectedSize === size)
+          ),
         });
       },
 
-      updateQuantity: (productId, quantity) => {
+      updateQuantity: (productId, size, quantity) => {
         if (quantity < 1) return;
         set({
           cart: get().cart.map((item) =>
-            item.id === productId ? { ...item, quantity } : item
+            item.id === productId && item.selectedSize === size
+              ? { ...item, quantity }
+              : item
           ),
         });
       },
 
       clearCart: () => set({ cart: [] }),
-
-      addToWishlist: (product) => {
-        const wishlist = get().wishlist;
-        if (!wishlist.find((item) => item.id === product.id)) {
-          set({ wishlist: [...wishlist, product] });
-        }
-      },
-
-      removeFromWishlist: (productId) => {
-        set({
-          wishlist: get().wishlist.filter((item) => item.id !== productId),
-        });
-      },
-
-      toggleWishlist: (product) => {
-        const wishlist = get().wishlist;
-        if (wishlist.find((item) => item.id === product.id)) {
-          set({
-            wishlist: wishlist.filter((item) => item.id !== product.id),
-          });
-        } else {
-          set({ wishlist: [...wishlist, product] });
-        }
-      },
     }),
     {
-      name: 'deadstock-dept-storage',
-
+      name: 'deadstock-dept-storage', // Saves cart in browser LocalStorage
     }
   )
 );
