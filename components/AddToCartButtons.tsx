@@ -149,35 +149,86 @@
 //     </button>
 //   );
 // }
+// "use client";
+
+// import { supabase } from "@/lib/supabase"; // Your client-side supabase instance
+// import { useState } from "react";
+
+// export default function AddToCartButtons({ product }: { product: any }) {
+//   const [loading, setLoading] = useState(false);
+
+//   const handleAddToCart = async () => {
+//     setLoading(true);
+
+//     try {
+//       // 1. Get the real logged-in user
+//       const { data: { user } } = await supabase.auth.getUser();
+
+//       if (!user) {
+//         alert("Please login to add items to cart!");
+//         setLoading(false);
+//         return;
+//       }
+
+//       // 2. Call your SQL function using the REAL user.id
+//       const { error } = await supabase.rpc("increment_cart_item", {
+//         p_user_id: user.id, // 🔥 REAL ID
+//         p_product_id: product.id,
+//       });
+
+//       if (error) throw error;
+
+//       alert("Added to cart 🛒");
+//     } catch (error: any) {
+//       console.error("Error adding to cart:", error.message);
+//       alert("Something went wrong!");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <button
+//       onClick={handleAddToCart}
+//       disabled={loading}
+//       className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 disabled:opacity-50"
+//     >
+//       {loading ? "Adding..." : "Add to Cart"}
+//     </button>
+//   );
+// }
 "use client";
 
-import { supabase } from "@/lib/supabase"; // Your client-side supabase instance
+import { supabase } from "@/lib/supabase";
 import { useState } from "react";
 
-export default function AddToCartButtons({ product }: { product: any }) {
+// Update the interface here to include 'disabled'
+export default function AddToCartButtons({ 
+  product, 
+  disabled 
+}: { 
+  product: any, 
+  disabled?: boolean // The '?' means it's optional
+}) {
   const [loading, setLoading] = useState(false);
 
   const handleAddToCart = async () => {
     setLoading(true);
 
     try {
-      // 1. Get the real logged-in user
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
         alert("Please login to add items to cart!");
-        setLoading(false);
         return;
       }
 
-      // 2. Call your SQL function using the REAL user.id
       const { error } = await supabase.rpc("increment_cart_item", {
-        p_user_id: user.id, // 🔥 REAL ID
+        p_user_id: user.id,
         p_product_id: product.id,
       });
 
       if (error) throw error;
-
       alert("Added to cart 🛒");
     } catch (error: any) {
       console.error("Error adding to cart:", error.message);
@@ -190,8 +241,9 @@ export default function AddToCartButtons({ product }: { product: any }) {
   return (
     <button
       onClick={handleAddToCart}
-      disabled={loading}
-      className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 disabled:opacity-50"
+      // Combine your internal loading state with the external 'disabled' prop
+      disabled={loading || disabled} 
+      className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed w-full font-bold uppercase tracking-widest"
     >
       {loading ? "Adding..." : "Add to Cart"}
     </button>
