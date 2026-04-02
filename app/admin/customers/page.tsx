@@ -215,7 +215,7 @@ export default async function CustomersPage() {
     const { data: customers, error: fetchError } = await supabase
         .from("profiles")
         .select("*")
-        .order("created_at", { ascending: false });
+
 
     // If this fails, it's almost certainly an RLS (Permission) issue in Supabase
     if (fetchError) {
