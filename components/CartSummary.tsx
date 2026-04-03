@@ -426,14 +426,150 @@
 //     );
 // }
 
+// "use client";
+
+// import { useState } from "react";
+// import { useRouter } from "next/navigation";
+// import { ShieldCheck } from "lucide-react";
+
+// export default function CartSummary({ cartItems, subtotal }: { cartItems: any[], subtotal: number }) {
+//     const [loading, setLoading] = useState(false);
+//     const [details, setDetails] = useState({
+//         full_name: "",
+//         email: "",
+//         phone: "",
+//         address: "",
+//         pincode: "",
+//     });
+//     const router = useRouter();
+
+//     const isFormValid =
+//         details.full_name.trim() !== "" &&
+//         details.email.trim() !== "" &&
+//         details.phone.trim() !== "" &&
+//         details.address.trim() !== "" &&
+//         details.pincode.trim() !== "";
+
+//     const handlePay = async () => {
+//         if (!isFormValid) return;
+
+//         setLoading(true);
+//         // UI Simulation to Success Page
+//         setTimeout(() => {
+//             setLoading(false);
+//             router.push("/success");
+//         }, 1800);
+//     };
+
+//     return (
+//         <div className="bg-white p-8 rounded-[2.5rem] h-fit shadow-2xl text-black border border-gray-100 sticky top-24">
+//             <h2 className="text-3xl font-black mb-8 uppercase tracking-tighter italic">Order Summary</h2>
+
+//             {/* Input Fields Section */}
+//             <div className="space-y-4 mb-8">
+//                 <p className="font-bold text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">Shipping Details</p>
+
+//                 <input
+//                     type="text"
+//                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
+//                     placeholder="Full Name"
+//                     onChange={(e) => setDetails({ ...details, full_name: e.target.value })}
+//                 />
+
+//                 <input
+//                     type="email"
+//                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
+//                     placeholder="Email Address"
+//                     onChange={(e) => setDetails({ ...details, email: e.target.value })}
+//                 />
+
+//                 <input
+//                     type="tel"
+//                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
+//                     placeholder="Phone Number"
+//                     onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+//                 />
+
+//                 <textarea
+//                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300 min-h-[100px] resize-none"
+//                     placeholder="Full Shipping Address"
+//                     onChange={(e) => setDetails({ ...details, address: e.target.value })}
+//                 />
+
+//                 <input
+//                     type="text"
+//                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
+//                     placeholder="Pincode"
+//                     onChange={(e) => setDetails({ ...details, pincode: e.target.value })}
+//                 />
+//             </div>
+
+//             {/* Pricing Section */}
+//             <div className="space-y-4 pt-4 border-t border-gray-50">
+//                 <div className="flex justify-between items-center text-gray-500 font-bold text-sm uppercase tracking-tight">
+//                     <span>Subtotal</span>
+//                     <span className="text-black font-mono">₹ {subtotal.toLocaleString('en-IN')}</span>
+//                 </div>
+//                 <div className="flex justify-between items-center text-green-600 font-black text-sm uppercase tracking-tight">
+//                     <span>Shipping</span>
+//                     <span className="text-[10px] bg-green-50 px-3 py-1 rounded-full border border-green-100">Free</span>
+//                 </div>
+//             </div>
+
+//             <div className="flex justify-between items-center font-black text-4xl italic tracking-tighter py-8 leading-none">
+//                 <span className="text-sm not-italic text-gray-300 font-bold uppercase tracking-widest self-end pb-1">Total</span>
+//                 <span>₹ {subtotal.toLocaleString('en-IN')}</span>
+//             </div>
+
+//             {/* Action Button */}
+//             <button
+//                 onClick={handlePay}
+//                 disabled={loading || cartItems.length === 0 || !isFormValid}
+//                 className="group w-full bg-black text-white py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] hover:bg-zinc-800 disabled:bg-gray-100 disabled:text-gray-300 transition-all active:scale-95 shadow-2xl shadow-black/20 overflow-hidden relative"
+//             >
+//                 <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+//                     Checkout Now
+//                 </span>
+
+//                 {loading && (
+//                     <span className="absolute inset-0 flex items-center justify-center">
+//                         <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+//                     </span>
+//                 )}
+//             </button>
+
+//             {/* Validation Message */}
+//             {!isFormValid && (
+//                 <div className="mt-4 p-2 bg-red-50/50 rounded-xl animate-pulse">
+//                     <p className="text-[9px] text-red-400 text-center font-black uppercase tracking-[0.2em]">
+//                         ⚠️ Complete shipping details to unlock
+//                     </p>
+//                 </div>
+//             )}
+
+//             {/* Footer Branding */}
+//             <div className="mt-8 flex items-center justify-center gap-2 text-gray-200">
+//                 <ShieldCheck size={12} />
+//                 <p className="text-[8px] text-center uppercase tracking-[0.4em] font-black">
+//                     Secure Encrypted Checkout
+//                 </p>
+//             </div>
+//         </div>
+//     );
+// }
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
+import CheckoutButton from "./CheckoutButton";
 
-export default function CartSummary({ cartItems, subtotal }: { cartItems: any[], subtotal: number }) {
-    const [loading, setLoading] = useState(false);
+interface CartSummaryProps {
+    cartItems: any[];
+    subtotal: number;
+    userId: string; // Pass this from the parent Cart page
+}
+
+export default function CartSummary({ cartItems, subtotal, userId }: CartSummaryProps) {
     const [details, setDetails] = useState({
         full_name: "",
         email: "",
@@ -441,7 +577,6 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
         address: "",
         pincode: "",
     });
-    const router = useRouter();
 
     const isFormValid =
         details.full_name.trim() !== "" &&
@@ -450,29 +585,21 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
         details.address.trim() !== "" &&
         details.pincode.trim() !== "";
 
-    const handlePay = async () => {
-        if (!isFormValid) return;
-
-        setLoading(true);
-        // UI Simulation to Success Page
-        setTimeout(() => {
-            setLoading(false);
-            router.push("/success");
-        }, 1800);
-    };
-
     return (
         <div className="bg-white p-8 rounded-[2.5rem] h-fit shadow-2xl text-black border border-gray-100 sticky top-24">
             <h2 className="text-3xl font-black mb-8 uppercase tracking-tighter italic">Order Summary</h2>
 
             {/* Input Fields Section */}
             <div className="space-y-4 mb-8">
-                <p className="font-bold text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">Shipping Details</p>
+                <p className="font-bold text-[10px] text-gray-400 uppercase tracking-[0.2em] mb-2 px-1">
+                    Shipping Details
+                </p>
 
                 <input
                     type="text"
                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
                     placeholder="Full Name"
+                    value={details.full_name}
                     onChange={(e) => setDetails({ ...details, full_name: e.target.value })}
                 />
 
@@ -480,6 +607,7 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
                     type="email"
                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
                     placeholder="Email Address"
+                    value={details.email}
                     onChange={(e) => setDetails({ ...details, email: e.target.value })}
                 />
 
@@ -487,12 +615,14 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
                     type="tel"
                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
                     placeholder="Phone Number"
+                    value={details.phone}
                     onChange={(e) => setDetails({ ...details, phone: e.target.value })}
                 />
 
                 <textarea
                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300 min-h-[100px] resize-none"
                     placeholder="Full Shipping Address"
+                    value={details.address}
                     onChange={(e) => setDetails({ ...details, address: e.target.value })}
                 />
 
@@ -500,6 +630,7 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
                     type="text"
                     className="w-full p-4 border border-gray-100 rounded-2xl text-sm outline-none focus:border-black transition bg-gray-50/30 placeholder:text-gray-300"
                     placeholder="Pincode"
+                    value={details.pincode}
                     onChange={(e) => setDetails({ ...details, pincode: e.target.value })}
                 />
             </div>
@@ -521,22 +652,26 @@ export default function CartSummary({ cartItems, subtotal }: { cartItems: any[],
                 <span>₹ {subtotal.toLocaleString('en-IN')}</span>
             </div>
 
-            {/* Action Button */}
-            <button
-                onClick={handlePay}
-                disabled={loading || cartItems.length === 0 || !isFormValid}
-                className="group w-full bg-black text-white py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] hover:bg-zinc-800 disabled:bg-gray-100 disabled:text-gray-300 transition-all active:scale-95 shadow-2xl shadow-black/20 overflow-hidden relative"
-            >
-                <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${loading ? 'opacity-0' : 'opacity-100'}`}>
-                    Checkout Now
-                </span>
-
-                {loading && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
-                    </span>
-                )}
-            </button>
+            {/* REAL RAZORPAY CHECKOUT BUTTON */}
+            {isFormValid ? (
+                <CheckoutButton 
+                    cartItems={cartItems}
+                    userProfile={{
+                        id: userId,
+                        full_name: details.full_name,
+                        email: details.email,
+                        address: `${details.address}, ${details.pincode}`
+                    }}
+                    totalAmount={subtotal}
+                />
+            ) : (
+                <button
+                    disabled
+                    className="w-full bg-gray-100 text-gray-300 py-5 rounded-full font-black text-xs uppercase tracking-[0.3em] cursor-not-allowed"
+                >
+                    Checkout Locked
+                </button>
+            )}
 
             {/* Validation Message */}
             {!isFormValid && (

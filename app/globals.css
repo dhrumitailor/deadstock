@@ -40,3 +40,15 @@ body {
   @apply transition-colors duration-300 ease-in-out;
 }
 
+/* Fix for Mobile Menu Layering */
+.fixed.inset-0.z-\[200\] {
+  position: fixed !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  overflow-y: auto;
+}
+
+/* Optional: Prevent background scrolling when menu is open */
+body.menu-open {
+  overflow: hidden;
+}
